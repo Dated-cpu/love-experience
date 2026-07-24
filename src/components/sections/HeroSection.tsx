@@ -4,7 +4,6 @@ import { InteractiveButton } from "@/components/ui/InteractiveButton";
 import { content } from "@/data/content";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { motion } from "framer-motion";
-import { useState } from "react";
 
 function FloatingOrb({ index }: { index: number }) {
   const prefersReduced = useReducedMotion();
@@ -40,10 +39,43 @@ function FloatingOrb({ index }: { index: number }) {
   );
 }
 
-export function HeroSection() {
+function SplitText({
+  text,
+  className,
+  delay = 0,
+}: {
+  text: string;
+  className?: string;
+  delay?: number;
+}) {
   const prefersReduced = useReducedMotion();
-  const [mounted] = useState(true);
 
+  if (prefersReduced) {
+    return <span className={className}>{text}</span>;
+  }
+
+  return (
+    <span className={className}>
+      {text.split("").map((char, i) => (
+        <motion.span
+          key={i}
+          className="inline-block"
+          initial={{ opacity: 0, y: 40, rotateX: -60 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: delay + i * 0.03,
+            ease: [0.25, 0.1, 0.25, 1],
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+export function HeroSection() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -60,7 +92,7 @@ export function HeroSection() {
 
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-4 text-sm tracking-[0.3em] uppercase text-rose-300/80 sm:text-base"
@@ -68,41 +100,39 @@ export function HeroSection() {
           {content.hero.greeting}
         </motion.p>
 
-        <motion.h1
-          initial={mounted ? { opacity: 0, y: 30 } : {}}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mb-4 text-5xl font-light leading-tight sm:text-7xl md:text-8xl lg:text-9xl"
-        >
+        <h1 className="mb-4 font-serif text-5xl leading-tight sm:text-7xl md:text-8xl lg:text-9xl">
           {content.hero.title}{" "}
-          <span className="text-gradient block sm:inline">{content.hero.highlight}</span>
-        </motion.h1>
+          <span className="text-gradient block sm:inline">
+            <SplitText text={content.hero.highlight} delay={0.6} />
+          </span>
+        </h1>
 
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
           className="mb-6 text-lg text-white/60 sm:text-xl md:text-2xl"
         >
           {content.hero.subtitle}
         </motion.p>
 
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 1.0 }}
           className="mx-auto mb-12 max-w-xl text-sm leading-relaxed text-white/40 sm:text-base"
         >
           {content.hero.description}
         </motion.p>
 
         <motion.div
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
         >
           <InteractiveButton
             size="lg"
+            magnetic
             onClick={() => {
               document
                 .getElementById("gallery")
@@ -129,7 +159,7 @@ export function HeroSection() {
 
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        animate={prefersReduced ? {} : { y: [0, 8, 0] }}
+        animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
         <svg

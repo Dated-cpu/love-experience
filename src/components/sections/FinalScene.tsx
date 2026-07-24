@@ -3,7 +3,7 @@
 import { content } from "@/data/content";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { motion, useInView } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 function AnimatedHeart() {
   const prefersReduced = useReducedMotion();
@@ -79,22 +79,44 @@ function LightParticle({ index }: { index: number }) {
         boxShadow: `0 0 6px 2px ${colors[index % colors.length]}80`,
       }}
       initial={prefersReduced ? { opacity: 0.5 } : { opacity: 0, x: "50%", y: "50%" }}
-      animate={
-        prefersReduced ? {} : { opacity: [0, 1, 0], x: pos.x, y: pos.y }
-      }
+      animate={prefersReduced ? {} : { opacity: [0, 1, 0], x: pos.x, y: pos.y }}
       transition={{ duration: dur, delay: del, repeat: Infinity, ease: "easeInOut" }}
       aria-hidden="true"
     />
   );
 }
 
+function StaggerText({ children, delay = 0 }: { children: string; delay?: number }) {
+  const prefersReduced = useReducedMotion();
+
+  if (prefersReduced) {
+    return <>{children}</>;
+  }
+
+  return (
+    <>
+      {children.split(" ").map((word, i) => (
+        <motion.span
+          key={i}
+          className="inline-block mr-[0.25em]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: delay + i * 0.08, ease: "easeOut" }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </>
+  );
+}
+
 export function FinalScene() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [mounted] = useState(true);
 
   return (
     <section
+      id="final"
       ref={ref}
       className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-24"
     >
@@ -106,7 +128,7 @@ export function FinalScene() {
 
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         <motion.div
-          initial={mounted ? { opacity: 0, scale: 0.5 } : {}}
+          initial={{ opacity: 0, scale: 0.5 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-12"
@@ -115,7 +137,7 @@ export function FinalScene() {
         </motion.div>
 
         <motion.h2
-          initial={mounted ? { opacity: 0, y: 30 } : {}}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mb-6 text-4xl font-light sm:text-5xl md:text-6xl"
@@ -124,7 +146,7 @@ export function FinalScene() {
         </motion.h2>
 
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mb-8 text-lg text-rose-300/80 sm:text-xl"
@@ -133,18 +155,18 @@ export function FinalScene() {
         </motion.p>
 
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.7 }}
           className="mx-auto max-w-xl text-sm leading-relaxed text-white/60 sm:text-base"
         >
-          {content.final.message}
+          <StaggerText delay={1.2}>{content.final.message}</StaggerText>
         </motion.p>
 
         <motion.p
-          initial={mounted ? { opacity: 0, y: 20 } : {}}
+          initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.9 }}
+          transition={{ duration: 0.8, delay: 1.5 }}
           className="mt-12 text-lg font-light text-rose-300/60 sm:text-xl"
         >
           {content.final.signature}

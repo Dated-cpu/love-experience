@@ -8,18 +8,20 @@ import { useState } from "react";
 function ReasonCard({
   item,
   index,
+  isOpen,
+  onToggle,
 }: {
   item: (typeof content.reasons.items)[0];
   index: number;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <RevealOnScroll delay={index * 0.1}>
       <motion.div
         layout
         className="glass cursor-pointer rounded-2xl overflow-hidden transition-all duration-300 hover:glow-rose"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         data-cursor="hover-card"
         initial={false}
       >
@@ -87,8 +89,10 @@ function ReasonCard({
 }
 
 export function ReasonsSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   return (
-    <section className="relative px-4 py-24 sm:px-8 sm:py-32">
+    <section id="reasons" className="relative px-4 py-24 sm:px-8 sm:py-32">
       <div className="mx-auto max-w-3xl">
         <RevealOnScroll>
           <div className="mb-16 text-center">
@@ -103,7 +107,13 @@ export function ReasonsSection() {
 
         <div className="space-y-4">
           {content.reasons.items.map((item, index) => (
-            <ReasonCard key={item.title} item={item} index={index} />
+            <ReasonCard
+              key={item.title}
+              item={item}
+              index={index}
+              isOpen={openIndex === index}
+              onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+            />
           ))}
         </div>
       </div>

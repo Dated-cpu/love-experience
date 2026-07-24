@@ -2,9 +2,37 @@
 
 import { ConfettiEffect } from "@/components/effects/ConfettiEffect";
 import { InteractiveButton } from "@/components/ui/InteractiveButton";
+import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { content } from "@/data/content";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+function TypewriterText({ text, speed = 30 }: { text: string; speed?: number }) {
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCounter((prev) => {
+        if (prev >= text.length) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return (
+    <span>
+      {text.slice(0, counter)}
+      {counter < text.length && (
+        <span className="inline-block h-[1em] w-[2px] animate-pulse bg-rose-400 ml-0.5" />
+      )}
+    </span>
+  );
+}
 
 function HeartParticles() {
   const positions = [
@@ -16,7 +44,6 @@ function HeartParticles() {
     { x: "65%", y: "75%" }, { x: "50%", y: "20%" }, { x: "50%", y: "80%" },
     { x: "20%", y: "65%" }, { x: "80%", y: "35%" },
   ];
-
   const delays = [0, 0.1, 0.2, 0.05, 0.15, 0.25, 0.08, 0.18, 0.12, 0.22,
                   0.03, 0.13, 0.23, 0.07, 0.17, 0.28, 0.1, 0.2, 0.05, 0.15];
   const durations = [2.0, 2.5, 3.0, 2.2, 2.8, 3.2, 2.5, 2.0, 3.0, 2.8,
@@ -41,39 +68,38 @@ function HeartParticles() {
 }
 
 export function SurpriseSection() {
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "loading" | "revealed">("idle");
   const [confettiTrigger, setConfettiTrigger] = useState(0);
 
   function handleReveal() {
-    if (isRevealed) return;
-    setIsLoading(true);
+    setPhase("loading");
 
     setTimeout(() => {
-      setIsLoading(false);
-      setIsRevealed(true);
+      setPhase("revealed");
       setConfettiTrigger((prev) => prev + 1);
     }, 1500);
   }
 
   return (
-    <section className="relative px-4 py-24 sm:px-8 sm:py-32">
+    <section id="surprise" className="relative px-4 py-24 sm:px-8 sm:py-32">
       <ConfettiEffect trigger={confettiTrigger > 0} />
 
       <div className="mx-auto max-w-2xl text-center">
         <AnimatePresence mode="wait">
-          {!isLoading && !isRevealed && (
+          {phase === "idle" && (
             <motion.div
               key="button"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <h2 className="mb-8 text-2xl font-light text-white/80 sm:text-3xl">
-                Готова к сюрпризу?
-              </h2>
+              <RevealOnScroll>
+                <h2 className="mb-8 text-2xl font-light text-white/80 sm:text-3xl">
+                  Готова к сюрпризу?
+                </h2>
+              </RevealOnScroll>
 
-              <InteractiveButton size="lg" onClick={handleReveal}>
+              <InteractiveButton size="lg" magnetic onClick={handleReveal}>
                 {content.surprise.buttonText}
                 <svg
                   className="h-4 w-4"
@@ -92,7 +118,7 @@ export function SurpriseSection() {
             </motion.div>
           )}
 
-          {isLoading && (
+          {phase === "loading" && (
             <motion.div
               key="loading"
               initial={{ opacity: 0 }}
@@ -111,7 +137,7 @@ export function SurpriseSection() {
             </motion.div>
           )}
 
-          {isRevealed && (
+          {phase === "revealed" && (
             <motion.div
               key="revealed"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -130,14 +156,9 @@ export function SurpriseSection() {
                   {content.surprise.revealTitle}
                 </motion.div>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="text-base leading-relaxed text-white/80 sm:text-lg"
-                >
-                  {content.surprise.revealMessage}
-                </motion.p>
+                <p className="text-base leading-relaxed text-white/80 sm:text-lg">
+                  <TypewriterText text={content.surprise.revealMessage} speed={25} />
+                </p>
               </div>
             </motion.div>
           )}
